@@ -70,7 +70,11 @@ def createLinkedList(n: int):
     g.addNode(str(0))
 
     for i in range(1, n):
-        g.addNode(str(i))
-        g.addUndirectedEdge(g.getNode(str(i)), g.getNode(str(i-1)))
+        nextNode = Node(str(i))
+        g.vertices.append(nextNode)
+        g.letters.append(nextNode.val)
+
+        g.vertices[i-1].adj.append(nextNode)
+        g.vertices[i-1].adjLetters.append(nextNode.val)
 
     return g
