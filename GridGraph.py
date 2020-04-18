@@ -8,67 +8,58 @@ class GridNode:
         self.y = y
         self.val = val
         self.adj = list()
-        self.adjLetters = list()
 
 
 class GridGraph:
     def __init__(self):
         self.vertices = list()
-        self.letters = list()
-        self.coordinates = list()
 
     def addGridNode(self, x: int, y: int, val: str):
-        if (x, y) in self.coordinates:
-            print("Already exists " + val)
-            return -1
+        for node in self.vertices:
+            if node.x == x and node.y == y:
+                print("ERROR: Coordinate already exists")
+                return -1
+            if node.val == val:
+                print("ERROR: value already exists")
 
         n = GridNode(x, y, val)
         self.vertices.append(n)
-        self.letters.append(val)
-        self.coordinates.append((x, y))
 
     def addUndirectedEdge(self, first: GridNode, second: GridNode):
         if abs(first.x - second.x) > 1 or abs(first.y - second.y) > 1:
-            print("ERROR")
+            print("ERROR: given nodes cannot be neighbors")
             return -1
 
         if first not in self.vertices or second not in self.vertices:
-            print("ERROR")
+            print("ERROR: given nodes are not in the graph")
             return -1
 
         first.adj.append(second)
         second.adj.append(first)
 
-        first.adjLetters.append(second.val)
-        second.adjLetters.append(first.val)
-
     def removeUndirectedEdge(self, first: GridNode, second: GridNode):
         if first not in self.vertices or second not in self.vertices:
-            print("ERROR")
+            print("ERROR: given nodes are not in the graph")
             return -1
 
         if second in first.adj:
             first.adj.remove(second)
-            first.adjLetters.remove(second.val)
-        else:
-            print("ERROR")
-            return -1
 
         if first in second.adj:
             second.adj.remove(first)
-            second.adjLetters.remove(first.val)
-        else:
-            print("ERROR")
-            return -1
 
     def getNode(self, val):
-        return self.vertices[self.letters.index(val)]
+        for node in self.vertices:
+            if node.val == val:
+                return node
 
     def getAllNodes(self):
         output = dict()
 
-        for n in self.vertices:
-            output[n.val] = n.adjLetters
+        for node in self.vertices:
+            output[node.val] = list()
+            for neighbor in node.adj:
+                output[node.val].append(neighbor.val)
 
         return output
 
@@ -90,6 +81,8 @@ def createRandomGridGraph(n: int):
         for j in range(0, n):
             g.addGridNode(j, i, str(j) + ", " + str(i))
 
+            # 0 does not add an edge
+            # 1 adds an edge
             chance = random.randrange(2)
             if chance == 1:
                 g.addUndirectedEdge(g.getNode(str(j) + ", " + str(i)), g.getNode(str(j) + ", " + str(i-1)))
@@ -103,35 +96,36 @@ def createRandomGridGraph(n: int):
 
 
 def astar(src: GridNode, dst: GridNode):
-    m = dict()
-    p = dict()
+    gridMap = dict()
+    parent = dict()
     output = list()
     visited = list()
 
-    h = abs(dst.x - src.x) + abs(dst.y + src.y)
-    m[src] = (0, h)
+    destDist = abs(dst.x - src.x) + abs(dst.y + src.y)
+    gridMap[src] = (0, destDist)
     curr = src
 
     while curr is not dst:
         visited.append(curr)
         for neighbor in curr.adj:
             if neighbor not in visited:
-                g = abs(neighbor.x - src.x) + abs(neighbor.y - src.y)
-                h = abs(dst.x - neighbor.x) + abs(dst.y - neighbor.y)
+                sourceDist = abs(neighbor.x - src.x) + abs(neighbor.y - src.y)
+                destDist = abs(dst.x - neighbor.x) + abs(dst.y - neighbor.y)
 
-            if neighbor in m:
-                if g < m[neighbor][0]:
-                    m[neighbor] = (g, h)
+            if neighbor in gridMap:
+                if sourceDist < gridMap[neighbor][0]:
+                    gridMap[neighbor] = (sourceDist, destDist)
             else:
-                m[neighbor] = (g, h)
-                p[neighbor] = curr
+                gridMap[neighbor] = (sourceDist, destDist)
+                parent[neighbor] = curr
 
+        # variable for smallest distance in gridMap
         small = sys.maxsize
-        for n in m:
+        for n in gridMap:
             if n in visited:
                 continue
-            if m[n][0] + m[n][1] < small:
-                small = m[n][0] + m[n][1]
+            if gridMap[n][0] + gridMap[n][1] < small:
+                small = gridMap[n][0] + gridMap[n][1]
                 curr = n
 
         if small == sys.maxsize:
@@ -140,7 +134,7 @@ def astar(src: GridNode, dst: GridNode):
 
     while curr is not src:
         output.insert(0, curr.val)
-        curr = p[curr]
+        curr = parent[curr]
     output.insert(0, src.val)
 
     return output
