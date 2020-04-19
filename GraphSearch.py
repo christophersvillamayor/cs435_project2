@@ -22,8 +22,7 @@ def DFSRecHelper(n: Graph.Node, end: Graph.Node, visited, output):
 
     if n == end:
         return
-
-    if len(n.adj) == 0:
+    elif len(n.adj) == 0:
         return
 
     for neighbor in n.adj:
@@ -32,13 +31,9 @@ def DFSRecHelper(n: Graph.Node, end: Graph.Node, visited, output):
 
 
 def DFSIter(start: Graph.Node, end: Graph.Node):
-    output = []
-    visited = []
-    stack = []
-
-    output.append(start.val)
-    visited.append(start)
-    stack.append(start)
+    output = [start.val]
+    visited = [start]
+    stack = [start]
 
     while len(stack) > 0:
         cur = stack.pop()
@@ -55,31 +50,31 @@ def DFSIter(start: Graph.Node, end: Graph.Node):
 
 
 def BFSRec(g: Graph.Graph):
-    q = []
+    queue = []
     visited = []
     output = []
 
     for n in g.vertices:
         if n not in visited:
-            q.append(n)
-            BFSRecHelper(q, visited, output)
+            queue.append(n)
+            BFSRecHelper(queue, visited, output)
 
     return output
 
 
-def BFSRecHelper(q, visited, output):
-    if len(q) == 0:
+def BFSRecHelper(queue, visited, output):
+    if len(queue) == 0:
         return
 
-    curr = q.pop(0)
+    curr = queue.pop(0)
 
     for neighbor in curr.adj:
         if neighbor not in visited:
             visited.append(neighbor)
             output.append(neighbor.val)
-            q.append(neighbor)
+            queue.append(neighbor)
 
-    BFSRecHelper(q, visited, output)
+    BFSRecHelper(queue, visited, output)
 
 
 def BFSIter(g: Graph.Graph):
@@ -87,14 +82,27 @@ def BFSIter(g: Graph.Graph):
     visited = []
     queue = []
 
+    # iterate through g.vertices
     for n in g.vertices:
+        # add current node to visited
+        # add the node's val to output
+        # and add the node to the queue
         if n not in visited:
             visited.append(n)
             output.append(n.val)
             queue.append(n)
+
+            # While the queue is not empty
             while len(queue) > 0:
+                # cur = first node in list
                 cur = queue.pop(0)
+
+                # iterate through neighbors of cur
                 for neighbor in cur.adj:
+
+                    # add current node to visited
+                    # add the node's val to output
+                    # and add the node to the queue
                     if neighbor not in visited:
                         output.append(neighbor.val)
                         visited.append(neighbor)
