@@ -6,50 +6,50 @@ class Node:
     def __init__(self, val):
         self.val = val
         self.adj = dict()
-        self.adjLetters = dict()
 
 
 class WeightedGraph():
     def __init__(self):
         self.vertices = list()
-        self.letters = list()
 
     def addNode(self, val: str):
         n = Node(val)
         self.vertices.append(n)
-        self.letters.append(val)
 
     def addWeightedEdge(self, first: Node, second: Node, weight: int):
         if first not in self.vertices or second not in self.vertices:
-            print("ERROR")
+            print("ERROR: nodes are not in the graph")
             return -1
 
-        if second in first.adj and second.val in first.adjLetters:
+        # if edge already exists, we do not want to add a duplicate
+        if second in first.adj:
             return
 
         first.adj[second] = weight
-        first.adjLetters[second.val] = weight
 
     def removeDirectedEdge(self, first: Node, second: Node):
         if first not in self.vertices or second not in self.vertices:
-            print("ERROR")
+            print("ERROR: nodes are not in the graph")
             return -1
 
         if second not in first.adj:
-            print("ERROR")
+            print("ERROR: no edge exists")
             return -1
 
         del first.adj[second]
-        del first.adjLetters[second.val]
 
     def getNode(self, val: str):
-        return self.vertices[self.letters.index(val)]
+        for node in self.vertices:
+            if node.val == val:
+                return node
 
     def getAllNodes(self):
-        output = {}
+        output = dict()
 
-        for n in self.vertices:
-            output[n.val] = n.adjLetters
+        for node in self.vertices:
+            output[node.val] = list()
+            for neighbor in node.adj:
+                output[node.val].append(neighbor.val)
 
         return output
 
@@ -109,18 +109,25 @@ def dijkstras(start: Node):
 
             m[neighbor] = findMin(m[curr] + curr.adj[neighbor], m[neighbor])
 
-        x = sys.maxsize
-        for n in m:
-            if n in visited:
-                curr = None
-                continue
-
-            if m[n] < x:
-                x = m[n]
-                curr = n
+        curr = leastNotVisited(m, visited)
 
     for node in m:
         output[node.val] = m[node]
+
+    return output
+
+
+def leastNotVisited(m, visited):
+    x = sys.maxsize
+    output = None
+    for node in m:
+        if node in visited:
+            output = None
+            continue
+
+        if m[node] < x:
+            x = m[node]
+            output = node
 
     return output
 
